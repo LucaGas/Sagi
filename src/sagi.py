@@ -34,8 +34,8 @@ import aria as Aria
 
 #Comment the first line and uncomment the second before installing
 #or making the tarball (alternatively, use project variables)
-#UI_FILE = "src/sagi.ui"
-UI_FILE = "/usr/local/share/sagi/ui/sagi.ui"
+UI_FILE = "src/sagi.ui"
+#UI_FILE = "/usr/local/share/sagi/ui/sagi.ui"
 
 
 class GUI:
@@ -43,7 +43,8 @@ class GUI:
     
     def refresh_list(self):
         """this handles the timer and get the list of items that are passed to refresh single"""
-        self.item_list = self.aria.get_all_files ()
+        self.all_info= self.aria.get_all ()
+        self.item_list=self.all_info["item_list"]
 
 
         gid_list = []
@@ -67,11 +68,12 @@ class GUI:
         self.treeviewDownloads.get_column(list.index("Progress")).set_cell_data_func(self.cellrendererprogressPB, self.set_cell_progress,self.item_list)
 
         """Update Label of Total Download Speed"""
-        global_stats=self.aria.get_global_stats ()
+        global_stats=self.all_info["global_stats"]
         if global_stats:
             self.labelDownSpeed.set_text("D: "+self.aria.convert_bytes (global_stats['downloadSpeed']))
         else:
             self.labelDownSpeed.set_text("N/A")
+
         return True	
 
     def remove_from_treeview(self,model, path, iter,gid_list):
@@ -148,6 +150,9 @@ class GUI:
         treeviewSelection=self.treeviewDownloads.get_selection()
         treeviewSelection.selected_foreach(self.aria.remove,self.item_list)
 
+    def on_tbAdd_clicked(self, widget, data=None):
+        self.dialogAdd.run()
+
     def on_statusicon_activate(self, widget, data=None):
         visible = self.window.get_property("visible")
         if visible:
@@ -166,6 +171,7 @@ class GUI:
         #   Get GTK Objects
         #
         self.window = self.builder.get_object('mainWindow')
+        self.dialogAdd = self.builder.get_object('dialogAdd')
         self.liststoreDownloads = self.builder.get_object("liststoreDownloads")
         self.treeviewDownloads = self.builder.get_object("treeviewDownloads")
         self.cellrendererprogressPB = self.builder.get_object("cellrendererPB")
@@ -181,9 +187,12 @@ class GUI:
         #
         #   Timer to refresh the gui, it calls refresh_list
         #
-        maintimer = gobject.timeout_add(500, self.refresh_list)
+        maintimer = gobject.timeout_add(1000, self.refresh_list)
 	
     def on_mainWindow_destroy(self, widget, data=None):
+        Gtk.main_quit()
+        
+    def on_addWindow_destroy(self, widget, data=None):
         Gtk.main_quit()
 
 def main():

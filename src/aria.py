@@ -1,4 +1,39 @@
-import xmlrpclib, gobject, datetime
+import xmlrpclib, gobject, datetime,time
+
+from gi.repository import Gtk
+import threading
+
+
+class myRPCThread(threading.Thread):
+    def __init__(self,aria,server):
+        super(myRPCThread, self).__init__()
+        self.server = server
+        self.quit = False
+        self.aria = aria
+    
+    def rpc_ask_files (self):
+        """Return a list of objects in all states Active,Waiting and Stopped, see docs tellActive"""
+        self.file_list=[]
+        object_list=[]
+        for file in self.server.tellActive():
+           self.file_list.append(file)
+        for file in self.server.tellWaiting(0,100):
+           self.file_list.append(file)
+        for file in self.server.tellStopped(0,100):
+           self.file_list.append(file)
+        for file in self.file_list:
+           object = AriaItem(file)
+           object_list.append (object)
+        self.aria.item_list = object_list
+
+        
+
+    def rpc_ask_global_stats (self):
+        self.aria.global_stats = self.server.getGlobalStat ()
+
+    def run(self):
+             gobject.idle_add(self.rpc_ask_files)
+             gobject.idle_add(self.rpc_ask_global_stats)
 
 class AriaItem(file):
     """Object that stores all the information of each item in aria download list"""
@@ -18,7 +53,7 @@ class AriaItem(file):
         self.status = file["status"]
         if file["downloadSpeed"] != "0":
             self.speed = self.convert_bytes (file["downloadSpeed"])
-            self.remainingLenght = file["totalLength"]-file["completedLength"]
+            self.remainingLenght = int(file["totalLength"])-int(file["completedLength"])
             self.estimated = str(datetime.timedelta(seconds = int(float(self.remainingLenght)/float(file["downloadSpeed"]))))
         else:
             self.speed = "N/A"
@@ -56,33 +91,22 @@ class Aria():
     
     def __init__(self):
         self.server = xmlrpclib.ServerProxy('http://casagas.dyndns.org:6801/rpc').aria2
-        self.object_list=[]
-        self.global_stats = {}
-        maintimer = gobject.timeout_add(1000, self.rpc_ask_all )
+        gobject.threads_init()
+        self.item_list=[]
+        self.global_stats={}
 
-    def get_all_files(self):
-        return self.object_list
         
-    def get_global_stats(self):
-        return self.global_stats
+    def get_all(self):
+        t = myRPCThread(self,self.server)
+        t.start()
+        all_info = {}
+        all_info["item_list"]=t.aria.item_list
+        all_info["global_stats"]=t.aria.global_stats
+        return all_info
+        
 
     
-    def rpc_ask_all (self):
-        """Return a list of objects in all states Active,Waiting and Stopped, see docs tellActive"""
-        file_list=[]
-        for file in self.server.tellActive():
-            file_list.append(file)
-        for file in self.server.tellWaiting(0,100):
-            file_list.append(file)
-        for file in self.server.tellStopped(0,100):
-            file_list.append(file)
-        object_list=[]
-        for file in file_list:
-            object = AriaItem(file)
-            object_list.append (object)
-        self.object_list = object_list
-        self.global_stats = self.server.getGlobalStat ()
-        return True
+
     #
     #   Aria commands, connected to buttons in the toolbar
     #
@@ -105,11 +129,14 @@ class Aria():
     def remove_all(self):
         self.server.purgeDownloadResult ()
 
-    #
-    #   Get info from aria
-    #
-    def rpc_get_global_stats(self):
-        return self.server.getGlobalStat ()
+    def unpause(self,gid):
+        self.server.unpause(gid)
+        
+    def add(self,url):
+        print url
+        self.server.addUri(url)
+
+
         
     def convert_bytes(self,bytes):
         """Method to convert bytes"""    
@@ -130,97 +157,10 @@ class Aria():
             size = '%.2fb' % bytes
         return size
         
-    """----------OLD-------------"""
 
     
-    def send_command(self, model, path, iter,command,file_info_dict):
-        if command=="pause":
-            self.server.pause(model.get_value(iter,0))
-        if command=="start":
-            self.server.unpause(model.get_value(iter,0))
-        if command=="remove":
-            if file_info_dict[model.get_value(iter,0)]['status']=="active":
-                print "active"
-            
-            #self.server.remove(model.get_value(iter,0))
-            #self.server.removeDownloadResult (model.get_value(iter,0))
-    
-    def unpause(self,gid):
-        self.server.unpause(gid)
-    def add(self,url):
-        print url
-        self.server.addUri(url)
-    def start(self, model, path, iter,treeview_list):
-        self.server.unpause(model.get_value(iter,0))
-    def pause(self, model, path, iter,file_info_dict):
-        self.server.pause(model.get_value(iter,0))
 
 
 
-    def get_file_info(self,file,list):
-        """store all needed info for a file and return a dict containing all info"""
-        file_info={}
-        file_info['status']= file['status']
-        for column in list:
-            if column =="#":
-                file_info['#']= str(file['gid'])
-            if column =="File":
-                if file['files'][0]['path']:
-                    file_info['File']= file['files'][0]['path']
-                else:
-                    o = urlparse(file['files'][0]['uris'][0]['uri'])
-                    file_info['File']= os.path.basename(o[2])
-            if column =="Size":
-                file_info['Size']= self.convert_bytes(file['files'][0]['length'])
-            if column =="Progress":
-                file_info['Progress']=self.get_progress(file)
-            if column =="Speed":
-                if file_info['status'] in ["waiting","error","paused","stopped","complete","removed"]:
-                    file_info['Speed']=None
-                else:
-                    file_info['Speed']=self.convert_bytes(file['downloadSpeed'])
-            if column =="Connections":
-                file_info['Connections']=file['connections']
-        return file_info
 
-    def get_file_info_dict(self,sagi):
-        file_info_dict={}
-        for file in self.get_all_files():
-            file_info=self.get_file_info(file,sagi.get_columns_titles())
-            file_info_dict[file_info['#']]=file_info
-        return file_info_dict
-            
-    def change_download_limit_single(self,gid):
-        self.server.changeOption(str(gid), {'max-download-limit':'1K'})
-
-    
-    
-
-    def get_progress(self,file):
-        compl= float(file['files'][0]['completedLength'])
-        total= float(file['files'][0]['length'])
-        if total > 0:
-            done=int((compl/total)*100)
-        else:
-            done=0
-        return done
-            
-
-
-    def convert_bytes(self,bytes):
-        bytes = float(bytes)
-        if bytes >= 1099511627776:
-            terabytes = bytes / 1099511627776
-            size = '%.2fT' % terabytes
-        elif bytes >= 1073741824:
-            gigabytes = bytes / 1073741824
-            size = '%.2fG' % gigabytes
-        elif bytes >= 1048576:
-            megabytes = bytes / 1048576
-            size = '%.2fM' % megabytes
-        elif bytes >= 1024:
-            kilobytes = bytes / 1024
-            size = '%.2fK' % kilobytes
-        else:
-            size = '%.2fb' % bytes
-        return size
+  
