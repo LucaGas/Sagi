@@ -17,15 +17,13 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from gi.repository import Gtk, GdkPixbuf, Gdk
-import os, sys, gobject
+import os, sys
+from gi.repository import GObject as gobject
 
 gobject.set_prgname("sagi")
 
 ###Test for threads
 
-import threading
-import glib
-glib.threads_init()
 
 #Aria Object
 import aria as Aria
@@ -43,7 +41,8 @@ class GUI:
     
     def refresh_list(self):
         """this handles the timer and get the list of items that are passed to refresh single"""
-        self.all_info= self.aria.get_all ()
+        self.aria.start_thread ()
+        self.all_info= self.aria.all_info
         self.item_list=self.all_info["item_list"]
 
 
@@ -152,6 +151,11 @@ class GUI:
 
     def on_tbAdd_clicked(self, widget, data=None):
         self.dialogAdd.run()
+        
+    def on_spinbuttonDownSpeed_value_changed(self, widget, data=None):
+        self.aria.change_DownSpeed(self.spinbuttonDownSpeed.get_value())
+
+        
 
     def on_statusicon_activate(self, widget, data=None):
         visible = self.window.get_property("visible")
@@ -176,6 +180,7 @@ class GUI:
         self.treeviewDownloads = self.builder.get_object("treeviewDownloads")
         self.cellrendererprogressPB = self.builder.get_object("cellrendererPB")
         self.labelDownSpeed = self.builder.get_object("labelDownSpeed")
+        self.spinbuttonDownSpeed = self.builder.get_object("spinbuttonDownSpeed")
         self.statusicon = self.builder.get_object("statusicon")
         self.window.show_all()
         #
@@ -184,10 +189,14 @@ class GUI:
         self.aria = Aria.Aria()
 
 
+        self.spinbuttonDownSpeed.set_value(1000)
+
+
         #
         #   Timer to refresh the gui, it calls refresh_list
         #
-        maintimer = gobject.timeout_add(1000, self.refresh_list)
+        #maintimer = gobject.timeout_add(1000, self.refresh_list)
+        gobject.idle_add(self.refresh_list)
 	
     def on_mainWindow_destroy(self, widget, data=None):
         Gtk.main_quit()

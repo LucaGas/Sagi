@@ -1,40 +1,7 @@
-import xmlrpclib, gobject, datetime,time
-
+import xmlrpclib, datetime,time
+from gi.repository import GObject as gobject
 from gi.repository import Gtk
 import threading
-
-
-class myRPCThread(threading.Thread):
-    def __init__(self,aria,server):
-        super(myRPCThread, self).__init__()
-        self.server = server
-        self.quit = False
-        self.aria = aria
-    
-    def rpc_ask_files (self):
-        """Return a list of objects in all states Active,Waiting and Stopped, see docs tellActive"""
-        self.file_list=[]
-        object_list=[]
-        for file in self.server.tellActive():
-           self.file_list.append(file)
-        for file in self.server.tellWaiting(0,100):
-           self.file_list.append(file)
-        for file in self.server.tellStopped(0,100):
-           self.file_list.append(file)
-        for file in self.file_list:
-           object = AriaItem(file)
-           object_list.append (object)
-        self.aria.item_list = object_list
-
-        
-
-    def rpc_ask_global_stats (self):
-        self.aria.global_stats = self.server.getGlobalStat ()
-
-    def run(self):
-             gobject.idle_add(self.rpc_ask_files)
-             gobject.idle_add(self.rpc_ask_global_stats)
-
 class AriaItem(file):
     """Object that stores all the information of each item in aria download list"""
     
@@ -92,17 +59,41 @@ class Aria():
     def __init__(self):
         self.server = xmlrpclib.ServerProxy('http://casagas.dyndns.org:6801/rpc').aria2
         gobject.threads_init()
-        self.item_list=[]
-        self.global_stats={}
+        self.all_info = {}
+        self.all_info["item_list"]=[]
+        self.all_info["global_stats"]=[]
+    
+    def rpc_ask (self):
+        """Return a list of objects in all states Active,Waiting and Stopped, see docs tellActive"""
+        file_list=[]        
+        item_list=[]
+        global_stats={}
+        all_info = {}
+        for file in self.server.tellActive():
+           file_list.append(file)
+        for file in self.server.tellWaiting(0,100):
+           file_list.append(file)
+        for file in self.server.tellStopped(0,100):
+           file_list.append(file)
+        for file in file_list:
+           item = AriaItem(file)
+           item_list.append (item)
+        global_stats = self.server.getGlobalStat ()  
+
+        all_info["item_list"]=item_list
+        all_info["global_stats"]=global_stats
+        self.all_info=all_info
+
+    def get_all(self):
+        return self.all_info     
+        
+    def start_thread(self):
+        if threading.active_count () == 1:
+            thread = threading.Thread(target=self.rpc_ask)          
+            thread.start()
 
         
-    def get_all(self):
-        t = myRPCThread(self,self.server)
-        t.start()
-        all_info = {}
-        all_info["item_list"]=t.aria.item_list
-        all_info["global_stats"]=t.aria.global_stats
-        return all_info
+        
         
 
     
@@ -133,7 +124,7 @@ class Aria():
         self.server.unpause(gid)
         
     def add(self,url):
-        print url
+
         self.server.addUri(url)
 
 
@@ -156,7 +147,9 @@ class Aria():
         else:
             size = '%.2fb' % bytes
         return size
-        
+
+    def change_DownSpeed(self,speed):
+        pass
 
     
 
