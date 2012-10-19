@@ -6,7 +6,7 @@ class AriaItem(file):
     """Object that stores all the information of each item in aria download list"""
     
     def __init__(self,file):
-        self.gid = file["gid"]
+        self.gid = int(file["gid"])
         if file["files"][0]["path"]:
             self.path = file["files"][0]["path"]
         else:

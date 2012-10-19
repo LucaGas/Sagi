@@ -135,7 +135,7 @@
   <object class="GtkListStore" id="liststoreDownloads">
     <columns>
       <!-- column-name # -->
-      <column type="gchararray"/>
+      <column type="gint"/>
       <!-- column-name File -->
       <column type="gchararray"/>
       <!-- column-name Size -->

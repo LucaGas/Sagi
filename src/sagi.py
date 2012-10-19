@@ -72,19 +72,19 @@ class GUI:
             self.labelDownSpeed.set_text("D: "+self.aria.convert_bytes (global_stats['downloadSpeed']))
         else:
             self.labelDownSpeed.set_text("")
-
-        number_active=0
-        number_waiting=0
-        number_complete=0
-        for item in self.item_list:
-            if item.status=="active":
-                number_active += 1
-            elif item.status=="waiting":
-                number_waiting +=1
-            elif item.status=="complete":
-                number_complete +=1
-        tooltip_text = "Downloading %s at %s\nWaiting: %s\nCompleted:%s" % (number_active, self.aria.convert_bytes (global_stats['downloadSpeed']), number_waiting,number_complete)
-        self.statusicon.set_tooltip_text(tooltip_text)
+        if self.item_list:
+            number_active=0
+            number_waiting=0
+            number_complete=0
+            for item in self.item_list:
+                if item.status=="active":
+                    number_active += 1
+                elif item.status=="waiting":
+                    number_waiting +=1
+                elif item.status=="complete":
+                   number_complete +=1
+            tooltip_text = "Downloading %s at %s\nWaiting: %s\nCompleted:%s" % (number_active, self.aria.convert_bytes (global_stats['downloadSpeed']), number_waiting,number_complete)
+            self.statusicon.set_tooltip_text(tooltip_text)
         return True	
 
     def remove_from_treeview(self,model, path, iter,gid_list):
@@ -124,23 +124,23 @@ class GUI:
             dict[item.gid] =item.status
         if dict[id]=='paused':
             cell_renderer.set_property('text', "Paused")
-            cell_renderer.set_property('cell-background', "grey")
+            #cell_renderer.set_property('cell-background', "grey")
         elif dict[id]=='complete':
             cell_renderer.set_property('text', "Complete")
-            cell_renderer.set_property('cell-background', "green")
+            #cell_renderer.set_property('cell-background', "green")
             
         elif dict[id]=='removed':
             cell_renderer.set_property('text', "Removed")
-            cell_renderer.set_property('cell-background', "red")
+            #cell_renderer.set_property('cell-background', "red")
         elif dict[id]=='error':
             cell_renderer.set_property('text', "Error")
             cell_renderer.set_property('cell-background', "red")
         elif dict[id]=='waiting':
             cell_renderer.set_property('text', "Waiting")
-            cell_renderer.set_property('cell-background', "grey")
+            #cell_renderer.set_property('cell-background', "grey")
         else:
             cell_renderer.set_property('text', None)
-            cell_renderer.set_property('cell-background', None)
+            #cell_renderer.set_property('cell-background', None)
             
     
 
