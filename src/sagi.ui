@@ -455,7 +455,9 @@
                     <property name="reorderable">True</property>
                     <property name="rubber_banding">True</property>
                     <child internal-child="selection">
-                      <object class="GtkTreeSelection" id="treeview-selection1"/>
+                      <object class="GtkTreeSelection" id="treeview-selection1">
+                        <property name="mode">multiple</property>
+                      </object>
                     </child>
                     <child>
                       <object class="GtkTreeViewColumn" id="treeviewcolumnN">
@@ -604,9 +606,6 @@
                   </packing>
                 </child>
                 <child>
-                  <placeholder/>
-                </child>
-                <child>
                   <object class="GtkSpinButton" id="spinbuttonDownSpeed">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
@@ -622,6 +621,9 @@
                     <property name="width">1</property>
                     <property name="height">1</property>
                   </packing>
+                </child>
+                <child>
+                  <placeholder/>
                 </child>
               </object>
               <packing>

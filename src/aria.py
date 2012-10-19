@@ -14,6 +14,7 @@ class AriaItem(file):
         if file["totalLength"] != "0":
             self.size = self.convert_bytes (file["totalLength"])
             self.progress = int(float(file["completedLength"])/float(file["totalLength"])*100)
+           
         else:
             self.size = file["totalLength"]
             self.progress = 0
@@ -23,12 +24,13 @@ class AriaItem(file):
             self.remainingLenght = int(file["totalLength"])-int(file["completedLength"])
             self.estimated = str(datetime.timedelta(seconds = int(float(self.remainingLenght)/float(file["downloadSpeed"]))))
         else:
-            self.speed = "N/A"
+            self.speed = ""
             self.estimated= ""
         if self.status == "active":
             self.connections = file["connections"]
         else:
-            self.connections = "N/A"
+            self.connections = ""
+
             
     def convert_bytes(self,bytes):
         """Method to convert bytes"""    
@@ -90,7 +92,11 @@ class Aria():
     def start_thread(self):
         if threading.active_count () == 1:
             thread = threading.Thread(target=self.rpc_ask)          
+            thread.setDaemon (True)
             thread.start()
+            thread.join(5)
+
+            
 
         
         

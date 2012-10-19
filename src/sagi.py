@@ -71,8 +71,20 @@ class GUI:
         if global_stats:
             self.labelDownSpeed.set_text("D: "+self.aria.convert_bytes (global_stats['downloadSpeed']))
         else:
-            self.labelDownSpeed.set_text("N/A")
+            self.labelDownSpeed.set_text("")
 
+        number_active=0
+        number_waiting=0
+        number_complete=0
+        for item in self.item_list:
+            if item.status=="active":
+                number_active += 1
+            elif item.status=="waiting":
+                number_waiting +=1
+            elif item.status=="complete":
+                number_complete +=1
+        tooltip_text = "Downloading %s at %s\nWaiting: %s\nCompleted:%s" % (number_active, self.aria.convert_bytes (global_stats['downloadSpeed']), number_waiting,number_complete)
+        self.statusicon.set_tooltip_text(tooltip_text)
         return True	
 
     def remove_from_treeview(self,model, path, iter,gid_list):
@@ -92,6 +104,8 @@ class GUI:
         for item in item_list:
             if item.gid == id:
                 list = [item.gid,item.path,item.size,item.progress,item.speed, item.estimated, item.connections]
+
+                    
         for value in list:
             self.liststoreDownloads.set_value(iter, list.index(value),value)
     
@@ -155,7 +169,8 @@ class GUI:
     def on_spinbuttonDownSpeed_value_changed(self, widget, data=None):
         self.aria.change_DownSpeed(self.spinbuttonDownSpeed.get_value())
 
-        
+    def on_statusicon_query_tooltip(self, widget, data=None):
+        print "tooltip"
 
     def on_statusicon_activate(self, widget, data=None):
         visible = self.window.get_property("visible")
@@ -195,8 +210,8 @@ class GUI:
         #
         #   Timer to refresh the gui, it calls refresh_list
         #
-        #maintimer = gobject.timeout_add(1000, self.refresh_list)
-        gobject.idle_add(self.refresh_list)
+        maintimer = gobject.timeout_add(1000, self.refresh_list)
+        #gobject.idle_add(self.refresh_list)
 	
     def on_mainWindow_destroy(self, widget, data=None):
         Gtk.main_quit()
