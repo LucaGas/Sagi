@@ -85,6 +85,9 @@ class GUI:
                    number_complete +=1
             tooltip_text = "Downloading %s at %s\nWaiting: %s\nCompleted:%s" % (number_active, self.aria.convert_bytes (global_stats['downloadSpeed']), number_waiting,number_complete)
             self.statusicon.set_tooltip_text(tooltip_text)
+
+        
+
         return True	
 
     def remove_from_treeview(self,model, path, iter,gid_list):
@@ -168,6 +171,7 @@ class GUI:
         
     def on_spinbuttonDownSpeed_value_changed(self, widget, data=None):
         self.aria.change_DownSpeed(self.spinbuttonDownSpeed.get_value())
+        pass
 
     def on_statusicon_query_tooltip(self, widget, data=None):
         print "tooltip"
@@ -204,9 +208,8 @@ class GUI:
         self.aria = Aria.Aria()
 
 
-        self.spinbuttonDownSpeed.set_value(1000)
 
-
+        self.spinbuttonDownSpeed.set_value(int(self.aria.downloadSpeed))
         #
         #   Timer to refresh the gui, it calls refresh_list
         #

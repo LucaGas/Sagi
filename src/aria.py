@@ -19,17 +19,22 @@ class AriaItem(file):
             self.size = file["totalLength"]
             self.progress = 0
         self.status = file["status"]
+
+        #if self.status=="active":
         if file["downloadSpeed"] != "0":
-            self.speed = self.convert_bytes (file["downloadSpeed"])
-            self.remainingLenght = int(file["totalLength"])-int(file["completedLength"])
-            self.estimated = str(datetime.timedelta(seconds = int(float(self.remainingLenght)/float(file["downloadSpeed"]))))
+                self.speed = self.convert_bytes (file["downloadSpeed"])
+                self.remainingLenght = int(file["totalLength"])-int(file["completedLength"])
+                self.estimated = str(datetime.timedelta(seconds = int(float(self.remainingLenght)/float(file["downloadSpeed"]))))
         else:
-            self.speed = ""
-            self.estimated= ""
+                self.speed = " "
+                self.estimated = " "
+
+            
         if self.status == "active":
             self.connections = file["connections"]
         else:
-            self.connections = ""
+            self.connections = " "
+            self.estimated = " "
 
             
     def convert_bytes(self,bytes):
@@ -64,6 +69,9 @@ class Aria():
         self.all_info = {}
         self.all_info["item_list"]=[]
         self.all_info["global_stats"]=[]
+        downloadspeed = self.convert_bytes(self.server.getGlobalOption()["max-overall-download-limit"])
+        self.downloadSpeed = downloadspeed.rsplit(".",1)[0]
+        
     
     def rpc_ask (self):
         """Return a list of objects in all states Active,Waiting and Stopped, see docs tellActive"""
@@ -108,20 +116,24 @@ class Aria():
     #   Aria commands, connected to buttons in the toolbar
     #
     def start(self, model, path, iter,treeview_list):
-        self.server.unpause(model.get_value(iter,0))
+        self.server.unpause(str(model.get_value(iter,0)))
         
     def pause(self, model, path, iter,treeview_list):
-        self.server.pause(model.get_value(iter,0))
+        gid=str(model.get_value(iter,0))
+        self.server.pause(gid)
 
     def remove(self, model, path, iter,item_list):
+        gid=str(model.get_value(iter,0))
+        print gid
         for item in item_list:
-            if item.gid == model.get_value(iter,0):
+            if str(item.gid) == gid:
                 if item.status =="active":
-                    #self.server.remove (model.get_value(iter,0))
-                    self.server.removeDownloadResult (model.get_value(iter,0))
+                    self.server.remove (model.get_value(iter,0))
+                    self.server.removeDownloadResult (gid)
+                if item.status =="paused":
+                    self.server.remove (gid)
                 if item.status in ["complete","error","removed"]:
-                    self.server.removeDownloadResult (model.get_value(iter,0))
-                self.server.remove (model.get_value(iter,0))
+                    self.server.removeDownloadResult (gid)
     
     def remove_all(self):
         self.server.purgeDownloadResult ()
@@ -155,8 +167,10 @@ class Aria():
         return size
 
     def change_DownSpeed(self,speed):
-        pass
-
+        #print   self.server.getGlobalOption()
+        speed=int(speed)
+        self.server.changeGlobalOption({"max-overall-download-limit":"%sK" % speed})
+        
     
 
 
