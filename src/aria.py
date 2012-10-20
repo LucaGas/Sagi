@@ -63,8 +63,9 @@ class AriaItem(file):
 class Aria():
     """Object that contains everything aria related that is not specific of an item"""
     
-    def __init__(self):
-        self.server = xmlrpclib.ServerProxy('http://casagas.dyndns.org:6801/rpc').aria2
+    def __init__(self,host,port):
+        server = 'http://%s:%s/rpc' % (host,port)
+        self.server = xmlrpclib.ServerProxy(server).aria2
         gobject.threads_init()
         self.all_info = {}
         self.all_info["item_list"]=[]

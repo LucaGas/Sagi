@@ -22,11 +22,12 @@ from gi.repository import GObject as gobject
 
 gobject.set_prgname("sagi")
 
-###Test for threads
 
 
 #Aria Object
 import aria as Aria
+
+import config as Config
 
 
 
@@ -205,7 +206,10 @@ class GUI:
         #
         #   Initiation of Aria Object
         #
-        self.aria = Aria.Aria()
+        self.config =Config.Config()
+        host = self.config._getHost ()
+        port = self.config._getPort ()
+        self.aria = Aria.Aria(host,port)
 
 
 
