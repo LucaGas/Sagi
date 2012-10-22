@@ -9,8 +9,7 @@ ui_DATA = sagi.ui \
 
 ## The main script
 bin_SCRIPTS = sagi.py \
-	aria.py \
-	config.py
+	aria.py
 
 ## Directory where .class files will be installed
 sagidir = $(pythondir)/sagi
