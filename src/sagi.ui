@@ -135,6 +135,8 @@
     <columns>
       <!-- column-name # -->
       <column type="gint"/>
+      <!-- column-name Priority -->
+      <column type="gint"/>
       <!-- column-name File -->
       <column type="gchararray"/>
       <!-- column-name Size -->
@@ -383,6 +385,50 @@
               </packing>
             </child>
             <child>
+              <object class="GtkSeparatorToolItem" id="tbSeparator2">
+                <property name="use_action_appearance">False</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="use_action_appearance">False</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="homogeneous">True</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkToolButton" id="tbUP">
+                <property name="use_action_appearance">False</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="use_action_appearance">False</property>
+                <property name="label" translatable="yes">Up</property>
+                <property name="use_underline">True</property>
+                <property name="stock_id">gtk-go-up</property>
+                <signal name="clicked" handler="on_tbUP_clicked" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="homogeneous">True</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkToolButton" id="tbDown">
+                <property name="use_action_appearance">False</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="use_action_appearance">False</property>
+                <property name="label" translatable="yes">Down</property>
+                <property name="use_underline">True</property>
+                <property name="stock_id">gtk-go-down</property>
+                <signal name="clicked" handler="on_tbDown_clicked" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="homogeneous">True</property>
+              </packing>
+            </child>
+            <child>
               <object class="GtkSeparatorToolItem" id="tbSeparator1">
                 <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
@@ -451,6 +497,7 @@
                     <property name="model">liststoreDownloads</property>
                     <property name="reorderable">True</property>
                     <property name="rubber_banding">True</property>
+                    <signal name="drag-end" handler="on_treeviewDownloads_drag_end" swapped="no"/>
                     <child internal-child="selection">
                       <object class="GtkTreeSelection" id="treeview-selection1">
                         <property name="mode">multiple</property>
@@ -458,6 +505,7 @@
                     </child>
                     <child>
                       <object class="GtkTreeViewColumn" id="treeviewcolumnN">
+                        <property name="visible">False</property>
                         <property name="resizable">True</property>
                         <property name="sizing">autosize</property>
                         <property name="title" translatable="yes">#</property>
@@ -473,6 +521,20 @@
                       </object>
                     </child>
                     <child>
+                      <object class="GtkTreeViewColumn" id="treeviewcolumnPriority">
+                        <property name="resizable">True</property>
+                        <property name="title" translatable="yes">Prioriy</property>
+                        <property name="reorderable">True</property>
+                        <property name="sort_column_id">1</property>
+                        <child>
+                          <object class="GtkCellRendererText" id="cellrenderertextPriority"/>
+                          <attributes>
+                            <attribute name="text">1</attribute>
+                          </attributes>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
                       <object class="GtkTreeViewColumn" id="treeviewcolumnFile">
                         <property name="resizable">True</property>
                         <property name="sizing">autosize</property>
@@ -482,7 +544,7 @@
                         <child>
                           <object class="GtkCellRendererText" id="cellrenderertextFile"/>
                           <attributes>
-                            <attribute name="text">1</attribute>
+                            <attribute name="text">2</attribute>
                           </attributes>
                         </child>
                       </object>
@@ -496,7 +558,7 @@
                         <child>
                           <object class="GtkCellRendererText" id="cellrenderertextSize"/>
                           <attributes>
-                            <attribute name="text">2</attribute>
+                            <attribute name="text">3</attribute>
                           </attributes>
                         </child>
                       </object>
@@ -513,7 +575,7 @@
                         <child>
                           <object class="GtkCellRendererProgress" id="cellrendererPB"/>
                           <attributes>
-                            <attribute name="value">3</attribute>
+                            <attribute name="value">4</attribute>
                           </attributes>
                         </child>
                       </object>
@@ -527,7 +589,7 @@
                         <child>
                           <object class="GtkCellRendererText" id="cellrenderertextSpeed"/>
                           <attributes>
-                            <attribute name="text">4</attribute>
+                            <attribute name="text">5</attribute>
                           </attributes>
                         </child>
                       </object>
@@ -543,7 +605,7 @@
                         <child>
                           <object class="GtkCellRendererText" id="cellrenderertextEstimated"/>
                           <attributes>
-                            <attribute name="text">5</attribute>
+                            <attribute name="text">6</attribute>
                           </attributes>
                         </child>
                       </object>
@@ -559,7 +621,7 @@
                         <child>
                           <object class="GtkCellRendererText" id="cellrenderertextConnections"/>
                           <attributes>
-                            <attribute name="text">6</attribute>
+                            <attribute name="text">7</attribute>
                           </attributes>
                         </child>
                       </object>

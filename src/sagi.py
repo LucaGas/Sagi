@@ -33,8 +33,8 @@ import aria as Aria
 
 #Comment the first line and uncomment the second before installing
 #or making the tarball (alternatively, use project variables)
-UI_FILE = "src/sagi.ui"
-#UI_FILE = "/usr/local/share/sagi/ui/sagi.ui"
+#UI_FILE = "src/sagi.ui"
+UI_FILE = "/usr/local/share/sagi/ui/sagi.ui"
 
 class Config(object):
     def __init__(self):
@@ -112,14 +112,12 @@ class GUI:
         for item in self.item_list:
             gid_list.append(item.gid)
             if not item.gid in self.treeview_list:
-                self.liststoreDownloads.append([item.gid,item.path,item.size,item.progress,item.speed,item.estimated,item.connections])
-
+                self.liststoreDownloads.append([item.gid,item.priority,item.path,item.size,item.progress,item.speed,item.estimated,item.connections])
         """Remove from GUI downloads that are not in aria2 anymore"""
         self.liststoreDownloads.foreach(self.remove_from_treeview,gid_list)
 
         """Refresh single items of the treeview"""
         self.liststoreDownloads.foreach(self.refresh_single,self.item_list)
-
         """Set Cells function, one for all and one specific for progress bar"""
         list=self.get_columns_titles()
         self.treeviewDownloads.get_column(list.index("Progress")).set_cell_data_func(self.cellrendererprogressPB, self.set_cell_progress,self.item_list)
@@ -127,7 +125,9 @@ class GUI:
         """Update Label of Total Download Speed"""
         global_stats=self.all_info["global_stats"]
         if global_stats:
-            self.labelDownSpeed.set_text("D: "+self.aria.convert_bytes (global_stats['downloadSpeed']))
+            self.labelDownSpeed.set_text("D: "+self.aria.convert_bytes (int(global_stats['downloadSpeed'])))           
+            #average_speed= (int(self.previous_speed)+int(global_stats['downloadSpeed']))/2
+            #self.labelDownSpeed.set_text("D: "+self.aria.convert_bytes (average_speed))
         else:
             self.labelDownSpeed.set_text("")
         if self.item_list:
@@ -143,6 +143,8 @@ class GUI:
                    number_complete +=1
             tooltip_text = "Downloading %s at %s\nWaiting: %s\nCompleted:%s" % (number_active, self.aria.convert_bytes (global_stats['downloadSpeed']), number_waiting,number_complete)
             self.statusicon.set_tooltip_text(tooltip_text)
+
+
 
         
 
@@ -164,7 +166,7 @@ class GUI:
         id=model.get_value(iter,0)
         for item in item_list:
             if item.gid == id:
-                list = [item.gid,item.path,item.size,item.progress,item.speed, item.estimated, item.connections]
+                list = [item.gid,item.priority,item.path,item.size,item.progress,item.speed, item.estimated, item.connections]
 
                     
         for value in list:
@@ -240,8 +242,20 @@ class GUI:
            self.window.hide()
         else:
            self.window.show()
+
+    def on_tbDown_clicked(self, widget, data=None):
+        treeviewSelection=self.treeviewDownloads.get_selection()
+        treeviewSelection.selected_foreach(self.aria.move_down,self.item_list)
+
+    def on_tbUP_clicked(self, widget, data=None):
+        treeviewSelection=self.treeviewDownloads.get_selection()
+        treeviewSelection.selected_foreach(self.aria.move_up,self.item_list)
+
+    def on_treeviewDownloads_drag_end(self, widget, data=None):
+        print "drag"
         
     def __init__(self):
+
         #
         #   GTK BUilder Stuff
         #
@@ -270,6 +284,10 @@ class GUI:
         password = self.config._getPassword ()
         
         self.aria = Aria.Aria(host,port,username,password)
+        self.all_info={}
+        self.all_info["global_stats"]={}
+        self.all_info["global_stats"]['downloadSpeed']=0
+
 
 
 

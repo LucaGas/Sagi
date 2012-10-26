@@ -20,7 +20,6 @@ class AriaItem(file):
             self.progress = 0
         self.status = file["status"]
 
-        #if self.status=="active":
         if file["downloadSpeed"] != "0":
                 self.speed = self.convert_bytes (file["downloadSpeed"])
                 self.remainingLenght = int(file["totalLength"])-int(file["completedLength"])
@@ -35,6 +34,7 @@ class AriaItem(file):
         else:
             self.connections = " "
             self.estimated = " "
+        self.priority=0
 
             
     def convert_bytes(self,bytes):
@@ -65,12 +65,13 @@ class Aria():
     
     def __init__(self,host,port,username,password):
         server = 'http://%s:%s@%s:%s/rpc' % (username,password,host,port)
-        print server
         self.server = xmlrpclib.ServerProxy(server).aria2
         gobject.threads_init()
+        self.previous_speed=0
         self.all_info = {}
         self.all_info["item_list"]=[]
-        self.all_info["global_stats"]=[]
+        self.all_info["global_stats"]={}
+        
         downloadspeed = self.convert_bytes(self.server.getGlobalOption()["max-overall-download-limit"])
         self.downloadSpeed = downloadspeed.rsplit(".",1)[0]
         
@@ -89,6 +90,7 @@ class Aria():
            file_list.append(file)
         for file in file_list:
            item = AriaItem(file)
+           item.priority= file_list.index(file)
            item_list.append (item)
         global_stats = self.server.getGlobalStat ()  
 
@@ -96,15 +98,14 @@ class Aria():
         all_info["global_stats"]=global_stats
         self.all_info=all_info
 
-    def get_all(self):
-        return self.all_info     
+
         
     def start_thread(self):
         if threading.active_count () == 1:
             thread = threading.Thread(target=self.rpc_ask)          
             thread.setDaemon (True)
             thread.start()
-            thread.join(5)
+            #thread.join(5)
 
             
 
@@ -126,17 +127,24 @@ class Aria():
 
     def remove(self, model, path, iter,item_list):
         gid=str(model.get_value(iter,0))
-        print gid
         for item in item_list:
             if str(item.gid) == gid:
                 if item.status =="active":
                     self.server.remove (model.get_value(iter,0))
                     self.server.removeDownloadResult (gid)
-                if item.status =="paused":
+                if item.status in ["paused","waiting"]:
                     self.server.remove (gid)
                 if item.status in ["complete","error","removed"]:
                     self.server.removeDownloadResult (gid)
-    
+
+    def move_up(self, model, path, iter,item_list):
+        gid=str(model.get_value(iter,0))
+        self.server.changePosition(gid, -1, 'POS_CUR')
+
+    def move_down(self, model, path, iter,item_list):
+        gid=str(model.get_value(iter,0))
+        self.server.changePosition(gid, +1, 'POS_CUR')
+                  
     def remove_all(self):
         self.server.purgeDownloadResult ()
 
