@@ -8,15 +8,15 @@ ui_DATA = sagi.ui \
 
 
 ## The main script
-bin_SCRIPTS = sagi.py \
-	aria.py
+bin_SCRIPTS = sagi.py
 
 ## Directory where .class files will be installed
 sagidir = $(pythondir)/sagi
 
 
 sagi_PYTHON = \
-	sagi.py
+	sagi.py \
+	aria.py
 
 
 EXTRA_DIST = $(ui_DATA)
