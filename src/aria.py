@@ -32,9 +32,9 @@ class AriaItem(file):
         if self.status == "active":
             self.connections = file["connections"]
         else:
-            self.connections = " "
-            self.estimated = " "
-        self.priority=0
+            self.connections = ""
+            self.estimated = ""
+        #self.priority=0
 
             
     def convert_bytes(self,bytes):

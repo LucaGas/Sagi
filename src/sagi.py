@@ -187,23 +187,23 @@ class GUI:
             dict[item.gid] =item.status
         if dict[id]=='paused':
             cell_renderer.set_property('text', "Paused")
-            #cell_renderer.set_property('cell-background', "grey")
+            cell_renderer.set_property('cell-background', "grey")
         elif dict[id]=='complete':
             cell_renderer.set_property('text', "Complete")
-            #cell_renderer.set_property('cell-background', "green")
+            cell_renderer.set_property('cell-background', "green")
             
         elif dict[id]=='removed':
             cell_renderer.set_property('text', "Removed")
-            #cell_renderer.set_property('cell-background', "red")
+            cell_renderer.set_property('cell-background', "red")
         elif dict[id]=='error':
             cell_renderer.set_property('text', "Error")
             cell_renderer.set_property('cell-background', "red")
         elif dict[id]=='waiting':
             cell_renderer.set_property('text', "Waiting")
-            #cell_renderer.set_property('cell-background', "grey")
+            cell_renderer.set_property('cell-background', "grey")
         else:
             cell_renderer.set_property('text', None)
-            #cell_renderer.set_property('cell-background', None)
+            cell_renderer.set_property('cell-background', None)
             
     
 
